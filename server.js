@@ -1,7 +1,22 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const express = require('express');
-const mongoose = require('mongoose');
 const app = express();
+const mongoose = require('mongoose');
+const expressLayouts = require('express-ejs-layouts');
+
+const indexRouter = require('./routes/index');
+
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
+app.set('layout', 'layouts/layout');
+
+app.use(expressLayouts);
+app.use(express.static('public'));
+app.use('/', indexRouter);
+app.use(express.json());
 
 mongoose.connect(process.env.DATABASE_URL, {
   useNewUrlParser: true,
@@ -12,8 +27,4 @@ const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', () => console.log('Connected to MongoDB Database'));
 
-app.use(express.json());
-const subscribersRouter = require('./routes/subscribers');
-app.use('/subscribers', subscribersRouter);
-
-app.listen(3000, () => console.log('Server Stared'));
+app.listen(process.env.PORT || 3000);
